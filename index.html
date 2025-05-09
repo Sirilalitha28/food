@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Sharing Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #ff6347;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .recipe-form {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .recipe-form input, .recipe-form textarea, .recipe-form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .recipe-form button {
+            background-color: #ff6347;
+            color: #fff;
+            cursor: pointer;
+        }
+        .recipe-form button:hover {
+            background-color: #e5533c;
+        }
+        .recipes-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .recipe-card {
+            background-color: #fff;
+            padding: 15px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            position: relative;
+        }
+        .recipe-card h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #333;
+        }
+        .recipe-card p {
+            margin: 0 0 10px;
+            color: #666;
+        }
+        .recipe-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .edit-btn, .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff6347;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Recipe Sharing Platform</div>
+
+    <div class="container">
+        <div class="recipe-form">
+            <h2>Share a Recipe</h2>
+            <input type="text" placeholder="Recipe Title" id="title">
+            <textarea placeholder="Recipe Instructions" id="instructions"></textarea>
+            <input type="file" id="image" accept="image/*">
+            <button onclick="addRecipe()">Add Recipe</button>
+        </div>
+
+        <input type="text" id="search" placeholder="Search Recipes" onkeyup="searchRecipes()">
+
+        <div class="recipes-list" id="recipes-list"></div>
+    </div>
+
+    <script>
+        let recipes = [];
+
+        function addRecipe() {
+            const title = document.getElementById('title').value;
+            const instructions = document.getElementById('instructions').value;
+            const imageFile = document.getElementById('image').files[0];
+
+            if (title && instructions) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const recipe = {
+                        id: Date.now(),
+                        title: title,
+                        instructions: instructions,
+                        image: e.target.result
+                    };
+                    recipes.push(recipe);
+                    renderRecipes();
+                }
+                if (imageFile) {
+                    reader.readAsDataURL(imageFile);
+                } else {
+                    const recipe = {
+                        id: Date.now(),
+                        title: title,
+                        instructions: instructions,
+                        image: ''
+                    };
+                    recipes.push(recipe);
+                    renderRecipes();
+                }
+            }
+        }
+
+        function renderRecipes() {
+            const recipesList = document.getElementById('recipes-list');
+            recipesList.innerHTML = '';
+            recipes.forEach(recipe => {
+                const recipeCard = document.createElement('div');
+                recipeCard.classList.add('recipe-card');
+                recipeCard.innerHTML = `
+                    ${recipe.image ? `<img src="${recipe.image}" alt="Recipe Image">` : ''}
+                    <h3>${recipe.title}</h3>
+                    <p>${recipe.instructions}</p>
+                    <button class="edit-btn" onclick="editRecipe(${recipe.id})">Edit</button>
+                    <button class="delete-btn" onclick="deleteRecipe(${recipe.id})">Delete</button>
+                `;
+                recipesList.appendChild(recipeCard);
+            });
+        }
+
+        function editRecipe(id) {
+            const recipe = recipes.find(r => r.id === id);
+            const newInstructions = prompt('Edit Recipe Instructions:', recipe.instructions);
+            if (newInstructions !== null) {
+                recipe.instructions = newInstructions;
+                renderRecipes();
+            }
+        }
+
+        function deleteRecipe(id) {
+            recipes = recipes.filter(r => r.id !== id);
+            renderRecipes();
+        }
+
+        function searchRecipes() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const filteredRecipes = recipes.filter(recipe => recipe.title.toLowerCase().includes(searchTerm));
+            const recipesList = document.getElementById('recipes-list');
+            recipesList.innerHTML = '';
+            filteredRecipes.forEach(recipe => {
+                const recipeCard = document.createElement('div');
+                recipeCard.classList.add('recipe-card');
+                recipeCard.innerHTML = `
+                    ${recipe.image ? `<img src="${recipe.image}" alt="Recipe Image">` : ''}
+                    <h3>${recipe.title}</h3>
+                    <p>${recipe.instructions}</p>
+                    <button class="edit-btn" onclick="editRecipe(${recipe.id})">Edit</button>
+                    <button class="delete-btn" onclick="deleteRecipe(${recipe.id})">Delete</button>
+                `;
+                recipesList.appendChild(recipeCard);
+            });
+        }
+    </script>
+</body>
+</html>
